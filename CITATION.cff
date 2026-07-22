@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the article and the software itself."
+title: "ECB Supply Chain Transparency Platform — Simulation Package"
+authors:
+  - family-names: Litvin
+    given-names: Alexander
+    orcid: "https://orcid.org/0009-0009-6744-4152"
+version: "1.0.0"
+date-released: "2026-07-22"
+license: MIT
+repository-code: "[INSERT REPOSITORY URL]"
+preferred-citation:
+  type: article
+  title: "Conceptual architecture of an industry platform for ensuring the transparency of supply chains for the electronic component base"
+  authors:
+    - family-names: Litvin
+      given-names: Alexander
+  journal: "[INSERT JOURNAL ON ACCEPTANCE]"
+  year: 2026
