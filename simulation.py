@@ -176,11 +176,13 @@ def run_cascade(G, nodes, oem, seed, platform: bool,
                 newly.append(v)
         for v in newly:
             failed[v] = True
+        # peak cascade size is measured AFTER failure propagation and
+        # BEFORE recovery (order: fail -> measure peak -> recover -> connectivity)
+        max_failed = max(max_failed, sum(failed.values()))
         # recovery
         for v in U.nodes:
             if failed[v] and rng.random() < p_rec:
                 failed[v] = False
-        max_failed = max(max_failed, sum(failed.values()))
         c = t1_connectivity()
         ri_curve.append(c)
         if mttr is None and c >= 0.95:
@@ -192,10 +194,11 @@ def run_cascade(G, nodes, oem, seed, platform: bool,
 # ----------------------------------------------------------------------------
 # 4. Antifragility (incident learning) experiment
 # ----------------------------------------------------------------------------
-def run_learning(G, nodes, oem, seed, n_batches=10, batch=5000, kappa=0.004):
+def run_learning(G, nodes, oem, seed, n_batches=10, batch=5000, kappa=0.4):
     """Platform scenario with incident-learning: after each batch, detection
-    probabilities are raised proportionally to labeled incidents observed:
-    d <- d + kappa * incidents_in_batch * (1 - d), capped at 0.99.
+    probabilities are updated as d <- d + kappa * lambda * (1 - d), where
+    lambda = n_detected/batch is the labeled-incident rate of the batch and
+    kappa = 0.4 is the learning-rate constant; d is capped at 0.99.
     AI index = -dCPR/dN_incidents (OLS slope of CPR on cumulative incidents)."""
     rng = np.random.default_rng(seed)
     d_extra = {t: DELTA_PLATFORM[t] for t in DELTA_PLATFORM}
@@ -227,7 +230,7 @@ def run_learning(G, nodes, oem, seed, n_batches=10, batch=5000, kappa=0.004):
         cums.append(cum_inc)
         for t in d_extra:  # learning update
             cur = D_BASE[t] + d_extra[t]
-            d_extra[t] = min(0.99 - D_BASE[t], d_extra[t] + kappa * (n_det / batch) * (1 - cur) * 100)
+            d_extra[t] = min(0.99 - D_BASE[t], d_extra[t] + kappa * (n_det / batch) * (1 - cur))
     slope = float(np.polyfit(cums, cprs, 1)[0])
     return -slope, cprs, cums
 
@@ -240,99 +243,125 @@ def ci95(x):
     h = stats.t.ppf(0.975, len(x) - 1) * s / np.sqrt(len(x))
     return m, s, (m - h, m + h)
 
-def main():
+def main(stage: str = "all"):
+    """stage: 'all' (default), 'main' (30-seed experiment only),
+    or 'sens' (sensitivity suite only)."""
     N_SEEDS = 30
     N_SHIP = 20000
-    res = {k: [] for k in ["cpr0", "cpr1", "mttd0", "mttd1",
-                            "ri0", "ri1", "cs0", "cs1", "mttr0", "mttr1", "ai"]}
-    for s in range(N_SEEDS):
-        G, nodes, oem = build_graph(1000 + s)
-        c0, m0, _ = run_counterfeit(G, nodes, oem, N_SHIP, 2000 + s, platform=False)
-        c1, m1, _ = run_counterfeit(G, nodes, oem, N_SHIP, 2000 + s, platform=True)
-        r0, cs0, t0 = run_cascade(G, nodes, oem, 3000 + s, platform=False)
-        r1, cs1, t1 = run_cascade(G, nodes, oem, 3000 + s, platform=True)
-        ai, _, _ = run_learning(G, nodes, oem, 4000 + s)
-        for k, v in zip(res, [c0, c1, m0, m1, r0, r1, cs0, cs1, t0, t1, ai]):
-            res[k].append(v)
+    if stage in ("all", "main"):
+      res = {k: [] for k in ["cpr0", "cpr1", "mttd0", "mttd1",
+                              "ri0", "ri1", "cs0", "cs1", "mttr0", "mttr1", "ai"]}
+      for s in range(N_SEEDS):
+          G, nodes, oem = build_graph(1000 + s)
+          c0, m0, _ = run_counterfeit(G, nodes, oem, N_SHIP, 2000 + s, platform=False)
+          c1, m1, _ = run_counterfeit(G, nodes, oem, N_SHIP, 2000 + s, platform=True)
+          r0, cs0, t0 = run_cascade(G, nodes, oem, 3000 + s, platform=False)
+          r1, cs1, t1 = run_cascade(G, nodes, oem, 3000 + s, platform=True)
+          ai, _, _ = run_learning(G, nodes, oem, 4000 + s)
+          for k, v in zip(res, [c0, c1, m0, m1, r0, r1, cs0, cs1, t0, t1, ai]):
+              res[k].append(v)
 
-    out = {}
-    for k, v in res.items():
-        m, sd, ci = ci95(v)
-        out[k] = {"mean": m, "sd": sd, "ci95": ci}
-    # relative CPR reduction per seed
-    rel = [(a - b) / a for a, b in zip(res["cpr0"], res["cpr1"])]
-    m, sd, ci = ci95(rel)
-    out["cpr_rel_reduction"] = {"mean": m, "sd": sd, "ci95": ci}
-    # Welch t-tests
-    for a, b, name in [("cpr0", "cpr1", "cpr"), ("ri0", "ri1", "ri"),
-                        ("cs0", "cs1", "cs"), ("mttr0", "mttr1", "mttr")]:
-        t, p = stats.ttest_ind(res[a], res[b], equal_var=False)
-        d = (np.mean(res[a]) - np.mean(res[b])) / np.sqrt(
-            (np.var(res[a], ddof=1) + np.var(res[b], ddof=1)) / 2)
-        out[f"test_{name}"] = {"welch_t": float(t), "p": float(p), "cohens_d": float(d)}
+      out = {}
+      for k, v in res.items():
+          m, sd, ci = ci95(v)
+          out[k] = {"mean": m, "sd": sd, "ci95": ci}
+      # relative CPR reduction per seed
+      rel = [(a - b) / a for a, b in zip(res["cpr0"], res["cpr1"])]
+      m, sd, ci = ci95(rel)
+      out["cpr_rel_reduction"] = {"mean": m, "sd": sd, "ci95": ci}
+      # Paired t-tests: baseline and platform share the graph and process seeds
+      # within each replication, so the design is paired (dz = mean(diff)/sd(diff))
+      for a, b, name in [("cpr0", "cpr1", "cpr"), ("mttd0", "mttd1", "mttd"),
+                          ("ri0", "ri1", "ri"), ("cs0", "cs1", "cs"),
+                          ("mttr0", "mttr1", "mttr")]:
+          diff = np.asarray(res[a], float) - np.asarray(res[b], float)
+          t, p = stats.ttest_rel(res[a], res[b])
+          dz = float(diff.mean() / diff.std(ddof=1))
+          out[f"test_{name}"] = {"paired_t": float(t), "p": float(p), "dz": dz}
 
-    with open("results_main.json", "w") as f:
-        json.dump(out, f, indent=1, default=float)
-    print(json.dumps(out, indent=1, default=float))
+      # raw per-replication outputs (reviewer requirement 11)
+      with open("results_raw.csv", "w") as f:
+          f.write("replication,graph_seed,shipment_seed,cascade_seed,learning_seed,"
+                  "CPR0,CPR1,MTTD0,MTTD1,RI0,RI1,CS0,CS1,MTTR0,MTTR1,AI\n")
+          for s in range(N_SEEDS):
+              f.write(f"{s},{1000+s},{2000+s},{3000+s},{4000+s},"
+                      f"{res['cpr0'][s]},{res['cpr1'][s]},{res['mttd0'][s]},{res['mttd1'][s]},"
+                      f"{res['ri0'][s]},{res['ri1'][s]},{res['cs0'][s]},{res['cs1'][s]},"
+                      f"{res['mttr0'][s]},{res['mttr1'][s]},{res['ai'][s]}\n")
 
-    # ---------------- sensitivity analysis ----------------
-    sens = {}
-    G, nodes, oem = build_graph(1000)
-    base_seeds = range(10)
-    def rel_red(p_scale=1.0, delta_scale=1.0):
-        r = []
-        for s in base_seeds:
-            c0, _, _ = run_counterfeit(G, nodes, oem, N_SHIP, 5000 + s, False, p_scale, 1.0)
-            c1, _, _ = run_counterfeit(G, nodes, oem, N_SHIP, 5000 + s, True, p_scale, delta_scale)
-            r.append((c0 - c1) / c0)
-        return ci95(r)
-    for ps in [0.5, 1.0, 2.0]:
-        m, sd, ci = rel_red(p_scale=ps)
-        sens[f"p_scale_{ps}"] = {"mean": m, "ci95": ci}
-    for ds in [0.5, 1.0, 1.2, 1.5]:
-        m, sd, ci = rel_red(delta_scale=ds)
-        sens[f"delta_scale_{ds}"] = {"mean": m, "ci95": ci}
-    for th in [0.20, 0.30, 0.40]:
-        r0s, r1s = [], []
-        for s in base_seeds:
-            r0, _, _ = run_cascade(G, nodes, oem, 6000 + s, False, theta=th)
-            r1, _, _ = run_cascade(G, nodes, oem, 6000 + s, True, theta=th)
-            r0s.append(r0); r1s.append(r1)
-        sens[f"theta_{th}"] = {"ri0": ci95(r0s)[0], "ri1": ci95(r1s)[0]}
-    for sf in [0.05, 0.10, 0.20]:
-        r0s, r1s = [], []
-        for s in base_seeds:
-            r0, _, _ = run_cascade(G, nodes, oem, 7000 + s, False, shock_frac=sf)
-            r1, _, _ = run_cascade(G, nodes, oem, 7000 + s, True, shock_frac=sf)
-            r0s.append(r0); r1s.append(r1)
-        sens[f"shock_{sf}"] = {"ri0": ci95(r0s)[0], "ri1": ci95(r1s)[0]}
-    for rh in [0.05, 0.10, 0.15]:
-        r1s = []
-        for s in base_seeds:
-            r1, _, _ = run_cascade(G, nodes, oem, 8000 + s, True, rho=rh)
-            r1s.append(r1)
-        sens[f"rho_{rh}"] = {"ri1": ci95(r1s)[0]}
-    # recovery-probability sensitivity (author-defined dynamics parameters)
-    for pr in [0.10, 0.15, 0.20, 0.25]:
-        r1s, t1s = [], []
-        for s in base_seeds:
-            r1, _, t1 = run_cascade(G, nodes, oem, 9000 + s, True,
-                                    p_recover_platform=pr)
-            r1s.append(r1); t1s.append(t1)
-        sens[f"prec_platform_{pr}"] = {"ri1": ci95(r1s)[0],
-                                       "ri1_ci95": ci95(r1s)[2],
-                                       "mttr1": ci95(t1s)[0]}
-    for pr in [0.05, 0.10]:
-        r0s = []
-        for s in base_seeds:
-            r0, _, _ = run_cascade(G, nodes, oem, 9500 + s, False,
-                                   p_recover_base=pr)
-            r0s.append(r0)
-        sens[f"prec_baseline_{pr}"] = {"ri0": ci95(r0s)[0],
-                                       "ri0_ci95": ci95(r0s)[2]}
-    with open("results_sensitivity.json", "w") as f:
-        json.dump(sens, f, indent=1, default=float)
-    print(json.dumps(sens, indent=1, default=float))
+      with open("results_main.json", "w") as f:
+          json.dump(out, f, indent=1, default=float)
+      print(json.dumps(out, indent=1, default=float))
+
+    if stage in ("all", "sens"):
+      # ---------------- sensitivity analysis ----------------
+      # Each sensitivity replication s uses its own independently generated
+      # network (graph seed 1000+s), so intervals reflect BOTH topology and
+      # process stochasticity, matching the main-experiment design.
+      sens = {}
+      base_seeds = range(10)
+      graphs = [build_graph(1000 + s) for s in base_seeds]
+      def rel_red(p_scale=1.0, delta_scale=1.0):
+          r = []
+          for s in base_seeds:
+              Gs, ns, oe = graphs[s]
+              c0, _, _ = run_counterfeit(Gs, ns, oe, N_SHIP, 5000 + s, False, p_scale, 1.0)
+              c1, _, _ = run_counterfeit(Gs, ns, oe, N_SHIP, 5000 + s, True, p_scale, delta_scale)
+              r.append((c0 - c1) / c0)
+          return ci95(r)
+      for ps in [0.5, 1.0, 2.0]:
+          m, sd, ci = rel_red(p_scale=ps)
+          sens[f"p_scale_{ps}"] = {"mean": m, "ci95": ci}
+      for ds in [0.5, 1.0, 1.2, 1.5]:
+          m, sd, ci = rel_red(delta_scale=ds)
+          sens[f"delta_scale_{ds}"] = {"mean": m, "ci95": ci}
+      for th in [0.20, 0.30, 0.40]:
+          r0s, r1s = [], []
+          for s in base_seeds:
+              Gs, ns, oe = graphs[s]
+              r0, _, _ = run_cascade(Gs, ns, oe, 6000 + s, False, theta=th)
+              r1, _, _ = run_cascade(Gs, ns, oe, 6000 + s, True, theta=th)
+              r0s.append(r0); r1s.append(r1)
+          sens[f"theta_{th}"] = {"ri0": ci95(r0s)[0], "ri1": ci95(r1s)[0]}
+      for sf in [0.05, 0.10, 0.20]:
+          r0s, r1s = [], []
+          for s in base_seeds:
+              Gs, ns, oe = graphs[s]
+              r0, _, _ = run_cascade(Gs, ns, oe, 7000 + s, False, shock_frac=sf)
+              r1, _, _ = run_cascade(Gs, ns, oe, 7000 + s, True, shock_frac=sf)
+              r0s.append(r0); r1s.append(r1)
+          sens[f"shock_{sf}"] = {"ri0": ci95(r0s)[0], "ri1": ci95(r1s)[0]}
+      for rh in [0.05, 0.10, 0.15]:
+          r1s = []
+          for s in base_seeds:
+              Gs, ns, oe = graphs[s]
+              r1, _, _ = run_cascade(Gs, ns, oe, 8000 + s, True, rho=rh)
+              r1s.append(r1)
+          sens[f"rho_{rh}"] = {"ri1": ci95(r1s)[0]}
+      # recovery-probability sensitivity (author-defined dynamics parameters)
+      for pr in [0.10, 0.15, 0.20, 0.25]:
+          r1s, t1s = [], []
+          for s in base_seeds:
+              Gs, ns, oe = graphs[s]
+              r1, _, t1 = run_cascade(Gs, ns, oe, 9000 + s, True,
+                                      p_recover_platform=pr)
+              r1s.append(r1); t1s.append(t1)
+          sens[f"prec_platform_{pr}"] = {"ri1": ci95(r1s)[0],
+                                         "ri1_ci95": ci95(r1s)[2],
+                                         "mttr1": ci95(t1s)[0]}
+      for pr in [0.05, 0.10]:
+          r0s = []
+          for s in base_seeds:
+              Gs, ns, oe = graphs[s]
+              r0, _, _ = run_cascade(Gs, ns, oe, 9500 + s, False,
+                                     p_recover_base=pr)
+              r0s.append(r0)
+          sens[f"prec_baseline_{pr}"] = {"ri0": ci95(r0s)[0],
+                                         "ri0_ci95": ci95(r0s)[2]}
+      with open("results_sensitivity.json", "w") as f:
+          json.dump(sens, f, indent=1, default=float)
+      print(json.dumps(sens, indent=1, default=float))
 
 if __name__ == "__main__":
-    main()
+    import sys
+    main(sys.argv[1] if len(sys.argv) > 1 else "all")
