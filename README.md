@@ -69,7 +69,7 @@ If you use this package, please cite both the article and the repository:
   author = {Litvin, Alexander},
   title = {ECB Supply Chain Transparency Simulation: Reference Implementation},
   year = {2026},
-  url = {https://doi.org/10.5281/zenodo.XXXXXXX}
+  url = {[https://github.com/ba37915052/ecb-supply-chain-transparency-simulation]}
 }
 ```
 
