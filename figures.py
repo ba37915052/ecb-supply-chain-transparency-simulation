@@ -67,7 +67,7 @@ plt.legend(); plt.tight_layout(); plt.savefig("fig_resilience.png", dpi=200); pl
 # sensitivity plot
 sens = json.load(open("results_sensitivity.json"))
 fig, ax = plt.subplots(1,2, figsize=(10,4))
-ds=[0.5,1.0,1.5]; y=[sens[f"delta_scale_{d}"]["mean"]*100 for d in ds]
+ds=[0.5,1.0,1.2,1.5]; y=[sens[f"delta_scale_{d}"]["mean"]*100 for d in ds]
 lo=[sens[f"delta_scale_{d}"]["ci95"][0]*100 for d in ds]; hi=[sens[f"delta_scale_{d}"]["ci95"][1]*100 for d in ds]
 ax[0].errorbar(ds,y,yerr=[np.array(y)-lo,np.array(hi)-y],marker='o',color='#284',capsize=4,label='Δd scale')
 ps=[0.5,1.0,2.0]; y2=[sens[f"p_scale_{p}"]["mean"]*100 for p in ps]
@@ -76,10 +76,18 @@ ax[0].errorbar(ps,y2,yerr=[np.array(y2)-lo2,np.array(hi2)-y2],marker='s',color='
 ax[0].axhspan(40,60,color='gray',alpha=.15,label='hypothesized 40–60% band')
 ax[0].set_xlabel("Parameter multiplier"); ax[0].set_ylabel("Relative CPR reduction, %")
 ax[0].set_title("(a) Sensitivity of counterfeit-risk reduction"); ax[0].legend(fontsize=8)
-th=[0.2,0.3,0.4]; r0=[sens[f"theta_{x}"]["ri0"] for x in th]; r1=[sens[f"theta_{x}"]["ri1"] for x in th]
-sf=[0.05,0.1,0.2]; s0=[sens[f"shock_{x}"]["ri0"] for x in sf]; s1=[sens[f"shock_{x}"]["ri1"] for x in sf]
-ax[1].plot(th,r0,'o--',color='#c44',label='RI baseline vs θ'); ax[1].plot(th,r1,'o-',color='#284',label='RI platform vs θ')
-ax[1].plot(sf,s0,'s--',color='#a60',label='RI baseline vs shock'); ax[1].plot(sf,s1,'s-',color='#068',label='RI platform vs shock')
+def _me(keys, mkey, cikey):
+    m=np.array([sens[k][mkey] for k in keys])
+    lo=np.array([sens[k][cikey][0] for k in keys]); hi=np.array([sens[k][cikey][1] for k in keys])
+    return m, np.vstack([m-lo, hi-m])
+th=[0.2,0.3,0.4]; thk=[f"theta_{x}" for x in th]
+sf=[0.05,0.1,0.2]; sfk=[f"shock_{x}" for x in sf]
+r0,e0=_me(thk,"ri0","ri0_ci95"); r1,e1=_me(thk,"ri1","ri1_ci95")
+s0,es0=_me(sfk,"ri0","ri0_ci95"); s1,es1=_me(sfk,"ri1","ri1_ci95")
+ax[1].errorbar(th,r0,yerr=e0,fmt='o--',color='#c44',capsize=3,label='RI baseline vs θ')
+ax[1].errorbar(th,r1,yerr=e1,fmt='o-',color='#284',capsize=3,label='RI platform vs θ')
+ax[1].errorbar(sf,s0,yerr=es0,fmt='s--',color='#a60',capsize=3,label='RI baseline vs shock')
+ax[1].errorbar(sf,s1,yerr=es1,fmt='s-',color='#068',capsize=3,label='RI platform vs shock')
 ax[1].set_xlabel("θ / shock fraction"); ax[1].set_ylabel("Resilience index RI")
 ax[1].set_title("(b) Sensitivity of resilience index"); ax[1].legend(fontsize=8)
 plt.tight_layout(); plt.savefig("fig_sensitivity.png", dpi=200); plt.close()

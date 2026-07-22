@@ -10,7 +10,7 @@ Implements:
   3. Threshold cascade model with platform protection margin rho.
   4. Recovery dynamics (MTTR) and resilience index RI (area under functionality curve).
   5. Incident-learning (antifragility) experiment.
-  6. Multi-seed replication, summary statistics, Welch t-test, sensitivity analysis.
+  6. Multi-seed replication, summary statistics, paired t-tests, sensitivity analysis.
 
 Python 3.12, numpy 2.4, networkx 3.6, scipy 1.17.
 """
@@ -299,6 +299,10 @@ def main(stage: str = "all"):
       # network (graph seed 1000+s), so intervals reflect BOTH topology and
       # process stochasticity, matching the main-experiment design.
       sens = {}
+      # Per-replication raw records (tidy long format) so that every reported
+      # sensitivity mean and 95% CI is reconstructable from the released file.
+      # Columns: family, param, replication, graph_seed, metric, value.
+      raw = []
       base_seeds = range(10)
       graphs = [build_graph(1000 + s) for s in base_seeds]
       def rel_red(p_scale=1.0, delta_scale=1.0):
@@ -308,13 +312,17 @@ def main(stage: str = "all"):
               c0, _, _ = run_counterfeit(Gs, ns, oe, N_SHIP, 5000 + s, False, p_scale, 1.0)
               c1, _, _ = run_counterfeit(Gs, ns, oe, N_SHIP, 5000 + s, True, p_scale, delta_scale)
               r.append((c0 - c1) / c0)
-          return ci95(r)
+          return ci95(r), r
       for ps in [0.5, 1.0, 2.0]:
-          m, sd, ci = rel_red(p_scale=ps)
+          (m, sd, ci), r = rel_red(p_scale=ps)
           sens[f"p_scale_{ps}"] = {"mean": m, "ci95": ci}
+          for s, v in zip(base_seeds, r):
+              raw.append(("p_scale", ps, s, 1000 + s, "cpr_rel_reduction", v))
       for ds in [0.5, 1.0, 1.2, 1.5]:
-          m, sd, ci = rel_red(delta_scale=ds)
+          (m, sd, ci), r = rel_red(delta_scale=ds)
           sens[f"delta_scale_{ds}"] = {"mean": m, "ci95": ci}
+          for s, v in zip(base_seeds, r):
+              raw.append(("delta_scale", ds, s, 1000 + s, "cpr_rel_reduction", v))
       for th in [0.20, 0.30, 0.40]:
           r0s, r1s = [], []
           for s in base_seeds:
@@ -322,7 +330,11 @@ def main(stage: str = "all"):
               r0, _, _ = run_cascade(Gs, ns, oe, 6000 + s, False, theta=th)
               r1, _, _ = run_cascade(Gs, ns, oe, 6000 + s, True, theta=th)
               r0s.append(r0); r1s.append(r1)
-          sens[f"theta_{th}"] = {"ri0": ci95(r0s)[0], "ri1": ci95(r1s)[0]}
+          sens[f"theta_{th}"] = {"ri0": ci95(r0s)[0], "ri1": ci95(r1s)[0],
+                                 "ri0_ci95": ci95(r0s)[2], "ri1_ci95": ci95(r1s)[2]}
+          for s, v0, v1 in zip(base_seeds, r0s, r1s):
+              raw.append(("theta", th, s, 1000 + s, "RI0", v0))
+              raw.append(("theta", th, s, 1000 + s, "RI1", v1))
       for sf in [0.05, 0.10, 0.20]:
           r0s, r1s = [], []
           for s in base_seeds:
@@ -330,14 +342,20 @@ def main(stage: str = "all"):
               r0, _, _ = run_cascade(Gs, ns, oe, 7000 + s, False, shock_frac=sf)
               r1, _, _ = run_cascade(Gs, ns, oe, 7000 + s, True, shock_frac=sf)
               r0s.append(r0); r1s.append(r1)
-          sens[f"shock_{sf}"] = {"ri0": ci95(r0s)[0], "ri1": ci95(r1s)[0]}
+          sens[f"shock_{sf}"] = {"ri0": ci95(r0s)[0], "ri1": ci95(r1s)[0],
+                                 "ri0_ci95": ci95(r0s)[2], "ri1_ci95": ci95(r1s)[2]}
+          for s, v0, v1 in zip(base_seeds, r0s, r1s):
+              raw.append(("shock", sf, s, 1000 + s, "RI0", v0))
+              raw.append(("shock", sf, s, 1000 + s, "RI1", v1))
       for rh in [0.05, 0.10, 0.15]:
           r1s = []
           for s in base_seeds:
               Gs, ns, oe = graphs[s]
               r1, _, _ = run_cascade(Gs, ns, oe, 8000 + s, True, rho=rh)
               r1s.append(r1)
-          sens[f"rho_{rh}"] = {"ri1": ci95(r1s)[0]}
+          sens[f"rho_{rh}"] = {"ri1": ci95(r1s)[0], "ri1_ci95": ci95(r1s)[2]}
+          for s, v1 in zip(base_seeds, r1s):
+              raw.append(("rho", rh, s, 1000 + s, "RI1", v1))
       # recovery-probability sensitivity (author-defined dynamics parameters)
       for pr in [0.10, 0.15, 0.20, 0.25]:
           r1s, t1s = [], []
@@ -349,6 +367,9 @@ def main(stage: str = "all"):
           sens[f"prec_platform_{pr}"] = {"ri1": ci95(r1s)[0],
                                          "ri1_ci95": ci95(r1s)[2],
                                          "mttr1": ci95(t1s)[0]}
+          for s, v1, tt in zip(base_seeds, r1s, t1s):
+              raw.append(("prec_platform", pr, s, 1000 + s, "RI1", v1))
+              raw.append(("prec_platform", pr, s, 1000 + s, "MTTR1", tt))
       for pr in [0.05, 0.10]:
           r0s = []
           for s in base_seeds:
@@ -358,8 +379,15 @@ def main(stage: str = "all"):
               r0s.append(r0)
           sens[f"prec_baseline_{pr}"] = {"ri0": ci95(r0s)[0],
                                          "ri0_ci95": ci95(r0s)[2]}
+          for s, v0 in zip(base_seeds, r0s):
+              raw.append(("prec_baseline", pr, s, 1000 + s, "RI0", v0))
       with open("results_sensitivity.json", "w") as f:
           json.dump(sens, f, indent=1, default=float)
+      # raw per-replication sensitivity outputs (reviewer requirement 11)
+      with open("results_sensitivity_raw.csv", "w") as f:
+          f.write("family,param,replication,graph_seed,metric,value\n")
+          for fam, prm, rep, gseed, metric, val in raw:
+              f.write(f"{fam},{prm},{rep},{gseed},{metric},{val}\n")
       print(json.dumps(sens, indent=1, default=float))
 
 if __name__ == "__main__":

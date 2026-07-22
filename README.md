@@ -15,7 +15,8 @@ Reference implementation of the Monte-Carlo / agent-based computational experime
 | `figures.py` | Reproduces all simulation figures (Figs. 2–4 of the manuscript) |
 | `results_main.json` | Summary statistics of the 30-replication experiment (mean, SD, 95% CI, paired tests) |
 | `results_raw.csv` | **Raw per-replication outputs**: one row per replication with all seeds and metric values (CPR, MTTD, RI, CS, MTTR, AI for both scenarios) |
-| `results_sensitivity.json` | Sensitivity analysis: p ×0.5–2, Δd ×0.5/1.0/1.2/1.5, θ 0.20–0.40, shock 0.05–0.20, ρ 0.05–0.15, recovery probabilities (platform 0.10–0.25; baseline 0.05/0.10); **each replication uses its own graph seed** |
+| `results_sensitivity.json` | Sensitivity analysis: p ×0.5–2, Δd ×0.5/1.0/1.2/1.5, θ 0.20–0.40, shock 0.05–0.20, ρ 0.05–0.15, recovery probabilities (platform 0.10–0.25; baseline 0.05/0.10); **each replication uses its own graph seed**. Every scenario now reports its 95% CI |
+| `results_sensitivity_raw.csv` | **Raw per-replication sensitivity outputs** (tidy long format: `family,param,replication,graph_seed,metric,value`; 320 rows). Every sensitivity mean and 95% CI is reconstructable from this file |
 | `fig_*.png` | Publication figures |
 | `requirements.txt`, `CITATION.cff`, `LICENSE` | Pinned versions, citation metadata, MIT license |
 
@@ -24,7 +25,7 @@ Reference implementation of the Monte-Carlo / agent-based computational experime
 ```bash
 pip install -r requirements.txt
 python simulation.py main   # 30-seed experiment → results_main.json, results_raw.csv
-python simulation.py sens   # sensitivity suite  → results_sensitivity.json
+python simulation.py sens   # sensitivity suite  → results_sensitivity.json, results_sensitivity_raw.csv
 python figures.py           # → fig_*.png
 ```
 
@@ -43,6 +44,7 @@ Sensitivity: the CPR reduction is governed by the detection increment Δd — 18
 
 ## Changelog
 
+- **v1.1.1** — adds raw per-replication sensitivity outputs (`results_sensitivity_raw.csv`) and 95% CIs for the θ/shock/ρ resilience sweeps in `results_sensitivity.json`; corrects `figures.py` to plot the Δd ×1.2 point and to draw uncertainty (error) bars on the resilience-index panel of `fig_sensitivity.png`; fixes a stale `Welch t-test` reference in the `simulation.py` docstring (the code uses paired t-tests). Numerical results are unchanged from v1.1.0 (identical seeds and call order).
 - **v1.1.0** — cascade peak measured before recovery (order documented); paired statistics (t_rel, d_z) replacing independent Welch tests; learning update stated as d ← d + κ·λ·(1−d) with κ = 0.4 (numerically identical dynamics, notation corrected); raw per-replication outputs (`results_raw.csv`); sensitivity replications use independent graph seeds; Δd × 1.2 and recovery-probability sweeps added; staged CLI.
 - v1.0.x — initial release and extended sensitivity checks.
 

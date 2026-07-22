@@ -5,7 +5,7 @@ authors:
   - family-names: Litvin
     given-names: Alexander
     orcid: "https://orcid.org/0009-0009-6744-4152"
-version: "1.1.0"
+version: "1.1.1"
 date-released: "2026-07-22"
 license: MIT
 repository-code: "https://github.com/ba37915052/ecb-supply-chain-transparency-simulation"
