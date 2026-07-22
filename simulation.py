@@ -289,7 +289,7 @@ def main():
     for ps in [0.5, 1.0, 2.0]:
         m, sd, ci = rel_red(p_scale=ps)
         sens[f"p_scale_{ps}"] = {"mean": m, "ci95": ci}
-    for ds in [0.5, 1.0, 1.5]:
+    for ds in [0.5, 1.0, 1.2, 1.5]:
         m, sd, ci = rel_red(delta_scale=ds)
         sens[f"delta_scale_{ds}"] = {"mean": m, "ci95": ci}
     for th in [0.20, 0.30, 0.40]:
@@ -312,6 +312,24 @@ def main():
             r1, _, _ = run_cascade(G, nodes, oem, 8000 + s, True, rho=rh)
             r1s.append(r1)
         sens[f"rho_{rh}"] = {"ri1": ci95(r1s)[0]}
+    # recovery-probability sensitivity (author-defined dynamics parameters)
+    for pr in [0.10, 0.15, 0.20, 0.25]:
+        r1s, t1s = [], []
+        for s in base_seeds:
+            r1, _, t1 = run_cascade(G, nodes, oem, 9000 + s, True,
+                                    p_recover_platform=pr)
+            r1s.append(r1); t1s.append(t1)
+        sens[f"prec_platform_{pr}"] = {"ri1": ci95(r1s)[0],
+                                       "ri1_ci95": ci95(r1s)[2],
+                                       "mttr1": ci95(t1s)[0]}
+    for pr in [0.05, 0.10]:
+        r0s = []
+        for s in base_seeds:
+            r0, _, _ = run_cascade(G, nodes, oem, 9500 + s, False,
+                                   p_recover_base=pr)
+            r0s.append(r0)
+        sens[f"prec_baseline_{pr}"] = {"ri0": ci95(r0s)[0],
+                                       "ri0_ci95": ci95(r0s)[2]}
     with open("results_sensitivity.json", "w") as f:
         json.dump(sens, f, indent=1, default=float)
     print(json.dumps(sens, indent=1, default=float))
