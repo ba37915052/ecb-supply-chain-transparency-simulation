@@ -1,5 +1,5 @@
 # ECB Supply Chain Transparency Platform — Simulation Package
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21487061.svg)](https://doi.org/10.5281/zenodo.21487061)
 Reference implementation of the Monte-Carlo / agent-based computational experiment for:
 
 > Litvin, A. *Conceptual architecture of an industry platform for ensuring the 
@@ -65,11 +65,14 @@ If you use this package, please cite both the article and the repository:
   year = {2026}
 }
 
-@software{Litvin2026software,
-  author = {Litvin, Alexander},
-  title = {ECB Supply Chain Transparency Simulation: Reference Implementation},
-  year = {2026},
-  url = {[https://github.com/ba37915052/ecb-supply-chain-transparency-simulation]}
+@software{litvin2026software,
+  author    = {Litvin, Alexander},
+  title     = {ECB Supply Chain Transparency Platform — Simulation Package},
+  version   = {1.0.0},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.21487061},
+  url       = {https://doi.org/10.5281/zenodo.21487061}
 }
 ```
 
