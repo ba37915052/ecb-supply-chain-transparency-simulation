@@ -13,7 +13,7 @@ Reference implementation of the Monte-Carlo / agent-based computational experime
 | `simulation.py` | Full experiment: network generation (N=251, M=460, four tiers + OEM), counterfeit introduction/detection model, threshold-cascade with recovery, incident-learning (antifragility), 30-seed replication with 95% CIs and sensitivity analysis |
 | `figures.py` | Reproduces all manuscript figures (Fig. X1–X3) |
 | `results_main.json` | Summary statistics from 30-replication experiment |
-| `results_sensitivity.json` | Parameter sensitivity analysis (p, Δd, θ, shock, ρ) |
+| `results_sensitivity.json` | Parameter sensitivity analysis (p, Δd, θ, shock, ρ, recovery probabilities) |
 | `fig_cpr.png`, `fig_resilience.png`, `fig_sensitivity.png` | Publication-quality figures |
 | `requirements.txt` | Python package versions (pinned) |
 | `CITATION.cff` | Citation metadata |
