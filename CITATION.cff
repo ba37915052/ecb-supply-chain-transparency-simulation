@@ -8,7 +8,7 @@ authors:
 version: "1.0.0"
 date-released: "2026-07-22"
 license: MIT
-repository-code: "[INSERT REPOSITORY URL]"
+repository-code: "[https://github.com/ba37915052/ecb-supply-chain-transparency-simulatio]"
 preferred-citation:
   type: article
   title: "Conceptual architecture of an industry platform for ensuring the transparency of supply chains for the electronic component base"
