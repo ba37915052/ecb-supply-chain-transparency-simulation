@@ -1,0 +1,44 @@
+{
+ "CPR_baseline": 0.012317977760000001,
+ "CPR_platform": 0.007860175280000001,
+ "rel_reduction": 0.3618940192014115,
+ "MTTD_baseline": 1.6139197150451106,
+ "MTTD_platform": 1.520523189304694,
+ "binomial_SD_baseline": 0.0007799437538663972,
+ "binomial_SD_platform": 0.0006244354620202026,
+ "platform_d_vector_T4_to_OEM": [
+  0.21,
+  0.21,
+  0.21,
+  0.5,
+  0.6
+ ],
+ "route_independence_values": [
+  0.012317977760000001,
+  0.012317977760000001,
+  0.012317977760000001,
+  0.012317977760000001,
+  0.012317977760000001
+ ],
+ "route_independent": true,
+ "simulated_CPR_baseline": {
+  "n": 30,
+  "mean": 0.012313333333333332,
+  "sd": 0.0005897008787824396,
+  "ci_low": 0.012093135406344324,
+  "ci_high": 0.01253353126032234,
+  "boot_low": 0.012118333333333337,
+  "boot_high": 0.012526666666666667
+ },
+ "simulated_CPR_platform": {
+  "n": 30,
+  "mean": 0.007905,
+  "sd": 0.0004355634480088743,
+  "ci_low": 0.007742357935565969,
+  "ci_high": 0.008067642064434033,
+  "boot_low": 0.007753333333333334,
+  "boot_high": 0.008060000000000001
+ },
+ "CPR_baseline_within_ci": true,
+ "CPR_platform_within_ci": true
+}

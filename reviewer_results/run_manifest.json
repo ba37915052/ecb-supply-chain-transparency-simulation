@@ -1,0 +1,41 @@
+{
+ "started": "2026-11-01 18:47:43",
+ "runtime_s": 188.7,
+ "n_replications": 30,
+ "seeds": {
+  "graph": "1000+s",
+  "shipments": "2000+s",
+  "cascade": "3000+s",
+  "learning": "4000+s"
+ },
+ "python": "3.14.4",
+ "numpy": "2.4.4",
+ "scipy": "1.17.1",
+ "networkx": "3.6.1",
+ "matplotlib": "3.10.8",
+ "os": "Windows-10-10.0.19045-SP0",
+ "processor": "Intel64 Family 6 Model 158 Stepping 9, GenuineIntel",
+ "cpu_count": 8,
+ "ram_gb": null,
+ "table3_self_check": {
+  "compared_values": 210,
+  "max_abs_diff_CPR_RI_CS": 0.0,
+  "max_rel_diff_AFI": 2.7306006068220425e-14,
+  "reproduces_table3": true
+ },
+ "sha256": {
+  "simulation.py": "0a4cefd874d613dddfc56e0e0ed7f7f056dfa173e1bc2703c3265e27dcbb0dbf",
+  "reviewer_runs.py": "692c46cd9aad02cb1add5ffa851e0bae872b5621caafb4d0a11d4597a10c6720",
+  "ablation_2x2_raw.csv": "d490a5029828bbc044f5963314d86e923e842907699a65888482ec7b83e31935",
+  "analytic_eq2.json": "1af92f871ff6bb045ba551cb77c8bbc1fd8412dff27d18dce720f6ca968e38dc",
+  "cascade_sweeps_raw.csv": "8cac546ace5d182db2e95543c97bedb83470d5d833a7cd02c4c87de79e4e0634",
+  "cpr_sensitivity_raw.csv": "70ed79e1c8f1af61978622296b1d04e3fb2fe753d30543497f6e4f0971a0891d",
+  "fig4_sensitivity.pdf": "dc303f53fec86b18e525ef1db1cc0e121210c1b33449c0c53ee90838352c111e",
+  "fig4_sensitivity.png": "1b8fd78de2a443abbf42f606ef8e3309c64f50bd31263064f88e6efd8aa36f3f",
+  "learning_control_raw.csv": "c720a02e94e3afd13fd24172ba8427b0afb4306e88845f234ad0ba145816ff45",
+  "summary.csv": "51fde24ff0b62a249705915b522326bddef08de4da52f7d2e24b1cb56d1a7a81",
+  "SUMMARY.md": "3e6267423206be5499e21112e7a33490da08053cd2b21289d4445384e93718b8",
+  "tie_check.json": "0a92de33cf39502a2a8724a2730d3c08d209f23f8a47fb8d7010f15068a6656e",
+  "tie_check_raw.csv": "92d0f2b7b8fb7080ee12fb2be518eac201969cba3345015d320048c943a8d498"
+ }
+}

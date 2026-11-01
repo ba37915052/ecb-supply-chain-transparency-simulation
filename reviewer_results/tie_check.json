@@ -1,0 +1,24 @@
+{
+ "baseline": {
+  "RI_archived": 0.39191111111111115,
+  "RI_exact": 0.39191111111111115,
+  "CS_archived": 0.7428950863213811,
+  "CS_exact": 0.7428950863213811,
+  "reps_changed": 0
+ },
+ "rho_only": {
+  "RI_archived": 0.9828666666666667,
+  "RI_exact": 0.9921333333333334,
+  "CS_archived": 0.11992031872509959,
+  "CS_exact": 0.10849933598937582,
+  "reps_changed": 23
+ },
+ "both": {
+  "RI_archived": 0.9962,
+  "RI_exact": 0.9987333333333334,
+  "CS_archived": 0.1095617529880478,
+  "CS_exact": 0.10491367861885789,
+  "reps_changed": 19
+ },
+ "rho_only_exact_equals_baseline_theta_0.40": true
+}
