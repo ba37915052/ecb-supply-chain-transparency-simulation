@@ -1,0 +1,89 @@
+{
+ "results": {
+  "CPR": {
+   "label": "CPR",
+   "n": 30,
+   "zero_differences": 0,
+   "positive": 30,
+   "negative": 0,
+   "mean_difference": 0.004408333333333333,
+   "boot_ci95": [
+    0.004233333333333334,
+    0.004599999999999999
+   ],
+   "wilcoxon_statistic": 0.0,
+   "wilcoxon_p": 1.7289484360195754e-06,
+   "wilcoxon_method": "approx"
+  },
+  "MTTD": {
+   "label": "MTTD, hops",
+   "n": 30,
+   "zero_differences": 0,
+   "positive": 30,
+   "negative": 0,
+   "mean_difference": 0.09540265271080604,
+   "boot_ci95": [
+    0.08649844969788113,
+    0.10449529908846013
+   ],
+   "wilcoxon_statistic": 0.0,
+   "wilcoxon_p": 1.862645149230957e-09,
+   "wilcoxon_method": "exact"
+  },
+  "RI": {
+   "label": "RI",
+   "n": 30,
+   "zero_differences": 1,
+   "positive": 0,
+   "negative": 29,
+   "mean_difference": -0.6042888888888888,
+   "boot_ci95": [
+    -0.7379777777777777,
+    -0.46353333333333324
+   ],
+   "wilcoxon_statistic": 0.0,
+   "wilcoxon_p": 2.5613577487758663e-06,
+   "wilcoxon_method": "approx"
+  },
+  "CS": {
+   "label": "Peak cascade size CS",
+   "n": 30,
+   "zero_differences": 0,
+   "positive": 30,
+   "negative": 0,
+   "mean_difference": 0.6333333333333332,
+   "boot_ci95": [
+    0.501593625498008,
+    0.7594953519256308
+   ],
+   "wilcoxon_statistic": 0.0,
+   "wilcoxon_p": 1.718092931245674e-06,
+   "wilcoxon_method": "approx"
+  },
+  "MTTR": {
+   "label": "T95cap, steps (column MTTR)",
+   "n": 30,
+   "zero_differences": 11,
+   "positive": 19,
+   "negative": 0,
+   "mean_difference": 35.2,
+   "boot_ci95": [
+    25.233333333333334,
+    45.13333333333333
+   ],
+   "wilcoxon_statistic": 0.0,
+   "wilcoxon_p": 4.896457741865042e-05,
+   "wilcoxon_method": "approx"
+  }
+ },
+ "settings": {
+  "bootstrap_resamples": 100000,
+  "seed": 12345,
+  "ci": "percentile",
+  "difference": "baseline minus platform",
+  "python": "3.14.4",
+  "numpy": "2.4.4",
+  "scipy": "1.17.1",
+  "results_raw_sha256_lf": "cc00dc4dc4cadbb2054458b3d7466de3a417bc82292d94c7d5b74fc59b2ca546"
+ }
+}

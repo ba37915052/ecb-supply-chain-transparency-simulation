@@ -19,6 +19,8 @@ Reference implementation of the Monte-Carlo / agent-based computational experime
 | `results_sensitivity_raw.csv` | **Raw per-replication sensitivity outputs** (tidy long format: `family,param,replication,graph_seed,metric,value`; 320 rows). Every sensitivity mean and 95% CI is reconstructable from this file |
 | `reviewer_runs.py` | Revision analyses (v1.2.0) for reviewer comments 6, 9 and a: cascade and CPR sensitivity with common random numbers (θ, initial shock, ρ, recovery probabilities, p, baseline d, Δd), 2×2 control scenarios (protection margin ρ × recovery), learning-rule control (κ = 0), analytical check of Eq. (2), threshold-tie check. `simulation.py` is used unchanged; nominal points reproduce `results_raw.csv` exactly (asserted) |
 | `reviewer_results/` | Outputs of `reviewer_runs.py`: raw per-replication CSVs, `summary.csv`, `SUMMARY.md`, `fig4_sensitivity.(png\|pdf)`, `analytic_eq2.json`, `tie_check.json`, `run_manifest.json` (versions, hardware, runtime, SHA-256) |
+| `verify_reproduction.py` | Reproduction check (v1.2.1): re-runs stages `main` and `sens` of the unchanged `simulation.py` in a temporary directory and compares every regenerated value with the archived outputs (`results_raw.csv`, `results_main.json`, `results_sensitivity_raw.csv`, `results_sensitivity.json`); report in `verification_results/` |
+| `robustness_tests.py` | Robustness of the paired comparisons of Table 3 (v1.2.1): Wilcoxon signed-rank tests and a paired percentile bootstrap of the mean difference (100,000 resamples, seed 12345) computed from `results_raw.csv`; results in `robustness_results/` |
 | `fig_*.png` | Publication figures |
 | `requirements.txt`, `CITATION.cff`, `LICENSE` | Pinned versions, citation metadata, MIT license |
 
@@ -30,6 +32,8 @@ python simulation.py main   # 30-seed experiment → results_main.json, results_
 python simulation.py sens   # sensitivity suite  → results_sensitivity.json, results_sensitivity_raw.csv
 python figures.py           # → fig_*.png
 python reviewer_runs.py     # revision analyses → reviewer_results/ (about 4 min on 2 cores)
+python verify_reproduction.py   # re-runs main + sens, compares with the archived outputs → verification_results/
+python robustness_tests.py      # Wilcoxon + paired bootstrap from results_raw.csv → robustness_results/
 ```
 
 All randomness uses NumPy PCG64 with fixed seeds (graph 1000+s; shipments 2000+s; cascades 3000+s; learning 4000+s; sensitivity 5000–9500+s), so every run is exactly reproducible while cross-run variability is preserved.
@@ -47,6 +51,7 @@ Sensitivity: the CPR reduction is governed by the detection increment Δd — 18
 
 ## Changelog
 
+- **v1.2.1** — adds `verify_reproduction.py` and `robustness_tests.py` with the results of the author's run (Windows, Python 3.14.4) in `verification_results/` and `robustness_results/`. Re-running stages `main` and `sens` reproduces all 2,551 archived values: per-replication CPR, MTTD, RI, CS and T95cap (column MTTR) and all sensitivity outputs are identical; the learning slope AI agrees to a relative 2.7e-14 and derived statistics to 3.5e-15 (floating-point rounding across platforms). Robustness of the paired comparisons: all Wilcoxon p ≤ 4.9e-5 and all bootstrap 95% intervals of the mean differences exclude zero. `simulation.py` and all archived results are unchanged.
 - **v1.2.0** — adds `reviewer_runs.py` and `reviewer_results/` (revision analyses for reviewer comments 6, 9 and a; 30 paired replications with the seeds of the main experiment, so every nominal point equals the corresponding `results_raw.csv` value). `simulation.py` and all v1.1.1 results are unchanged. Documents a floating-point tie in the platform cascade rule: when the failed-neighbour fraction equals exactly θ + ρ, `max(0, φ − ρ) > θ` evaluates True in IEEE-754 double precision (e.g. 0.4 − 0.1 > 0.3), so such nodes fail in the platform scenario; the reported platform RI and CS are therefore marginally conservative (see `reviewer_results/SUMMARY.md`; the baseline scenario is unaffected).
 - **v1.1.1** — adds raw per-replication sensitivity outputs (`results_sensitivity_raw.csv`) and 95% CIs for the θ/shock/ρ resilience sweeps in `results_sensitivity.json`; corrects `figures.py` to plot the Δd ×1.2 point and to draw uncertainty (error) bars on the resilience-index panel of `fig_sensitivity.png`; fixes a stale `Welch t-test` reference in the `simulation.py` docstring (the code uses paired t-tests). Numerical results are unchanged from v1.1.0 (identical seeds and call order).
 - **v1.1.0** — cascade peak measured before recovery (order documented); paired statistics (t_rel, d_z) replacing independent Welch tests; learning update stated as d ← d + κ·λ·(1−d) with κ = 0.4 (numerically identical dynamics, notation corrected); raw per-replication outputs (`results_raw.csv`); sensitivity replications use independent graph seeds; Δd × 1.2 and recovery-probability sweeps added; staged CLI.

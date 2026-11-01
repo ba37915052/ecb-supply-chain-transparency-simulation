@@ -1,0 +1,181 @@
+{
+ "runtime_main_s": 38.1,
+ "results_raw.csv": {
+  "replication": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "graph_seed": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "shipment_seed": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "cascade_seed": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "learning_seed": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "CPR0": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "CPR1": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "MTTD0": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "MTTD1": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "RI0": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "RI1": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "CS0": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "CS1": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "MTTR0": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "MTTR1": {
+   "n": 30,
+   "exact": 30,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "AI": {
+   "n": 30,
+   "exact": 10,
+   "max_rel": 2.730600606821968e-14,
+   "tol": 1e-09
+  }
+ },
+ "results_main.json": {
+  "other statistics": {
+   "n": 59,
+   "exact": 49,
+   "max_rel": 3.5175548717267854e-15,
+   "tol": 1e-12
+  },
+  "AI statistics": {
+   "n": 4,
+   "exact": 1,
+   "max_rel": 1.336075540898997e-15,
+   "tol": 1e-09
+  }
+ },
+ "runtime_sens_s": 43.6,
+ "results_sensitivity_raw.csv": {
+  "family": {
+   "n": 320,
+   "exact": 320,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "param": {
+   "n": 320,
+   "exact": 320,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "replication": {
+   "n": 320,
+   "exact": 320,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "graph_seed": {
+   "n": 320,
+   "exact": 320,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "metric": {
+   "n": 320,
+   "exact": 320,
+   "max_rel": 0.0,
+   "tol": 0.0
+  },
+  "value": {
+   "n": 320,
+   "exact": 320,
+   "max_rel": 0.0,
+   "tol": 0.0
+  }
+ },
+ "results_sensitivity.json": {
+  "other statistics": {
+   "n": 88,
+   "exact": 88,
+   "max_rel": 0.0,
+   "tol": 1e-12
+  }
+ },
+ "pass": true,
+ "values_compared": 2551,
+ "values_identical": 2518,
+ "environment": {
+  "python": "3.14.4",
+  "os": "Windows-10-10.0.19045-SP0",
+  "processor": "Intel64 Family 6 Model 158 Stepping 9, GenuineIntel",
+  "numpy": "2.4.4",
+  "scipy": "1.17.1",
+  "networkx": "3.6.1"
+ },
+ "sha256_lf_normalised": {
+  "simulation.py": "31a26d78ea0939c6c60f9f5ed555126eff5f94294b84217c76eab7eab1295e2e",
+  "results_raw.csv": "cc00dc4dc4cadbb2054458b3d7466de3a417bc82292d94c7d5b74fc59b2ca546",
+  "results_main.json": "cc29f6d1b3f2d6e58f921ccbc925bec1748846607533aabbaefd8030a9cfb8fb",
+  "results_sensitivity_raw.csv": "ceab5d65c20c50abed0449f44581f4846fc86a2ed78583fd1cdfcdc8a4aa1a15",
+  "results_sensitivity.json": "bbbdb83eb8a3a64cd018f554af91229ec8f13db9f8a817a03aaac129c3eeeecc"
+ },
+ "runtime_total_s": 82.3
+}
